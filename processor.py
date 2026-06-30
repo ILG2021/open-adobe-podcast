@@ -55,8 +55,9 @@ def enhance_clearvoice_universr(input_path: str, output_dir: str = "temp_output"
 
     # Stage 2 – Super-resolution
     print("[Stage 2] UniverSR super-resolution...")
-    info = torchaudio.info(denoised_path)
-    output_tensor = universr_model.enhance(denoised_path, input_sr=info.sample_rate)
+    # Load audio to get sample rate reliably across different torchaudio versions
+    _, sr = torchaudio.load(denoised_path)
+    output_tensor = universr_model.enhance(denoised_path, input_sr=sr)
     torchaudio.save(final_path, output_tensor.cpu(), 48000)
 
     print(f"[Done] Saved → {final_path}")
@@ -73,10 +74,9 @@ def _load_lavasr(device):
     global _lavasr_model
     if _lavasr_model is None:
         print("[LavaSR] Loading model...")
-        # LavaSR is installed from: pip install git+https://github.com/ysharma3501/LavaSR
-        # It auto-downloads ~50 MB weights from Hugging Face on first run.
-        from lavasr import LavaSR
-        _lavasr_model = LavaSR.from_pretrained("YatharthS/LavaSR", device=device)
+        # Following official HuggingFace Space integration
+        from LavaSR.model import LavaEnhance2
+        _lavasr_model = LavaEnhance2("YatharthS/LavaSR", device)
         print("[LavaSR] Model ready.")
     return _lavasr_model
 
@@ -94,13 +94,22 @@ def enhance_lavasr(input_path: str, output_dir: str = "temp_output") -> str:
     final_path = os.path.join(output_dir, f"enhanced_lavasr_{base_name}.wav")
 
     print("[LavaSR] Enhancing audio...")
-    wav, sr = torchaudio.load(input_path)
-    # Convert to mono if needed
-    if wav.shape[0] > 1:
-        wav = wav.mean(dim=0, keepdim=True)
+    
+    # 1. Get exact sample rate first (using load for compatibility with older torchaudio)
+    _, input_sr = torchaudio.load(input_path)
 
-    enhanced = model.enhance(wav, sr)
-    torchaudio.save(final_path, enhanced.cpu(), 48000)
+    # 2. Load audio using LavaSR's native method
+    input_audio_tensor, actual_sr = model.load_audio(input_path, input_sr=input_sr)
+    
+    # 3. Enhance
+    output_audio_tensor = model.enhance(
+        input_audio_tensor, 
+        denoise=True, 
+        batch=False
+    )
+    
+    # Save the output (it outputs 48kHz by default)
+    torchaudio.save(final_path, output_audio_tensor.cpu(), 48000)
 
     print(f"[Done] Saved → {final_path}")
     return final_path
