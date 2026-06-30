@@ -1,4 +1,5 @@
 import os
+import argparse
 # Disable Gradio telemetry/analytics
 os.environ["GRADIO_ANALYTICS_ENABLED"] = "False"
 
@@ -153,4 +154,12 @@ with gr.Blocks(theme=theme, css=css, title="Open-Source Podcast AI") as demo:
 # ─────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    parser = argparse.ArgumentParser(description="Open-Source Podcast AI")
+    parser.add_argument("--root_path", type=str, default=os.environ.get("GRADIO_ROOT_PATH", ""), help="Root path for Gradio app (e.g. /podcast)")
+    args = parser.parse_args()
+
+    demo.launch(
+        server_name="127.0.0.1", 
+        server_port=7860,
+        root_path=args.root_path
+    )
