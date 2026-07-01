@@ -7,7 +7,7 @@ Supports two pipelines:
 
 import os
 import torch
-import torchaudio
+import soundfile as sf
 
 # ─────────────────────────────────────────
 # Pipeline 1: ClearVoice + UniverSR
@@ -55,10 +55,16 @@ def enhance_clearvoice_universr(input_path: str, output_dir: str = "temp_output"
 
     # Stage 2 – Super-resolution
     print("[Stage 2] UniverSR super-resolution...")
-    # Load audio to get sample rate reliably across different torchaudio versions
-    _, sr = torchaudio.load(denoised_path)
+    # Get sample rate using soundfile
+    info = sf.info(denoised_path)
+    sr = info.samplerate
     output_tensor = universr_model.enhance(denoised_path, input_sr=sr)
-    torchaudio.save(final_path, output_tensor.cpu(), 48000)
+    
+    # Save output using soundfile
+    output_np = output_tensor.squeeze().cpu().numpy()
+    if output_np.ndim == 1:
+        output_np = output_np.reshape(-1, 1) # Ensure correct shape for writing
+    sf.write(final_path, output_np, 48000)
 
     print(f"[Done] Saved → {final_path}")
     return final_path
@@ -95,8 +101,9 @@ def enhance_lavasr(input_path: str, output_dir: str = "temp_output") -> str:
 
     print("[LavaSR] Enhancing audio...")
     
-    # 1. Get exact sample rate first (using load for compatibility with older torchaudio)
-    _, input_sr = torchaudio.load(input_path)
+    # 1. Get exact sample rate first (using soundfile)
+    info = sf.info(input_path)
+    input_sr = info.samplerate
 
     # 2. Load audio using LavaSR's native method
     input_audio_tensor, actual_sr = model.load_audio(input_path, input_sr=input_sr)
@@ -108,8 +115,11 @@ def enhance_lavasr(input_path: str, output_dir: str = "temp_output") -> str:
         batch=False
     )
     
-    # Save the output (it outputs 48kHz by default)
-    torchaudio.save(final_path, output_audio_tensor.cpu(), 48000)
+    # Save the output (it outputs 48kHz by default) using soundfile
+    output_np = output_audio_tensor.squeeze().cpu().numpy()
+    if output_np.ndim == 1:
+        output_np = output_np.reshape(-1, 1) # Ensure correct shape for writing
+    sf.write(final_path, output_np, 48000)
 
     print(f"[Done] Saved → {final_path}")
     return final_path

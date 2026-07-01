@@ -1,7 +1,7 @@
 --extra-index-url https://download.pytorch.org/whl/cu128
 
 torch
-torchaudio
+soundfile
 gradio
 clearvoice
 git+https://github.com/woongzip1/UniverSR.git
