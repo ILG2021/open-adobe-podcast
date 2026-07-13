@@ -1,8 +1,17 @@
 --extra-index-url https://download.pytorch.org/whl/cu128
 
-torch
-soundfile
-gradio
-clearvoice
-git+https://github.com/woongzip1/UniverSR.git
-git+https://github.com/ysharma3501/LavaSR.git
+# Core versions are aligned with the official Sidon demo and ClearVoice 0.1.2.
+numpy==1.26.4
+torch==2.7.1
+torchaudio==2.7.1
+torchvision==0.22.1
+soundfile==0.12.1
+gradio==5.3.0
+clearvoice==0.1.2
+transformers==4.53.3
+huggingface_hub==0.34.0
+matchering==2.0.6
+
+# Pin Git dependencies to reviewed commits for reproducible installs.
+git+https://github.com/woongzip1/UniverSR.git@26dc21c44e11f9f19e823f02b0d4641dd5ea5af2
+git+https://github.com/ysharma3501/LavaSR.git@33ac040892519c1bb4aed7eb32e79af51cc29e2a
