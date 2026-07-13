@@ -96,7 +96,7 @@ def update_description(pipeline_name):
     return PIPELINE_DESCRIPTIONS.get(pipeline_name, "")
 
 
-with gr.Blocks(theme=theme, css=css, title="开源播客音频工作台") as demo:
+with gr.Blocks(title="开源播客音频工作台") as demo:
     gr.Markdown("# 🎙️ 开源播客音频工作台")
     gr.Markdown(
         "<p class='subtitle'>语音增强与参考音频声场匹配 · 完全本地运行 · 保护隐私</p>"
@@ -176,4 +176,10 @@ if __name__ == "__main__":
         help="Gradio 应用的根路径，例如 /podcast",
     )
     args = parser.parse_args()
-    demo.launch(server_name="127.0.0.1", server_port=7860, root_path=args.root_path)
+    demo.launch(
+        server_name="127.0.0.1",
+        server_port=7860,
+        root_path=args.root_path,
+        theme=theme,
+        css=css,
+    )
