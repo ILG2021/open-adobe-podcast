@@ -54,18 +54,18 @@ footer { display: none !important; }
 
 pipeline_choices = list(PIPELINES)
 PIPELINE_DESCRIPTIONS = {
-    pipeline_choices[0]: (
+    "🐋 Sidon（多语言语音修复 · 首选）": (
+        "<b>首选语音修复方案。</b>Sidon 以最长 96 秒的分块修复语音，输出单声道 "
+        "48 kHz 音频，并自动使用官方 CPU 或 CUDA TorchScript 权重。"
+    ),
+    "🧹 ClearVoice + UniverSR（强力增强 · 按需超分）": (
         "<b>强力语音增强方案。</b>ClearVoice 负责去除底噪和混响；当原始输入为 "
         "8/12/16/24 kHz 时，再由 UniverSR 重建高频。44.1/48 kHz 输入会跳过"
         "不必要的超分辨率，统一输出 48 kHz 音频。"
     ),
-    pipeline_choices[1]: (
+    "🌋 LavaSR（极速 · 单阶段）": (
         "<b>单阶段快速增强方案。</b>LavaSR 在一次处理中完成降噪和带宽扩展，"
         "适合对处理速度要求较高的场景。"
-    ),
-    pipeline_choices[2]: (
-        "<b>多语言语音修复方案。</b>Sidon 以最长 96 秒的分块修复语音，输出单声道 "
-        "48 kHz 音频，并自动使用官方 CPU 或 CUDA TorchScript 权重。"
     ),
 }
 

@@ -12,9 +12,9 @@
 
 | 类别 | 引擎 | 当前用途 | 输出 |
 | --- | --- | --- | --- |
+| 音频增强 | Sidon（首选） | 多语言语音修复、长音频分块处理 | 单声道 48 kHz、24-bit WAV |
 | 音频增强 | ClearVoice + UniverSR | 强降噪、减弱混响；仅对 8/12/16/24 kHz 输入继续执行带宽扩展 | 48 kHz、24-bit WAV |
 | 音频增强 | LavaSR | 快速语音降噪与带宽扩展 | 48 kHz、24-bit WAV |
-| 音频增强 | Sidon | 多语言语音修复、长音频分块处理 | 单声道 48 kHz、24-bit WAV |
 | 声场匹配 | Matchering | 让目标音频接近参考音频的频响、RMS、峰值和立体声宽度 | 24-bit WAV |
 
 ## 功能定位
@@ -42,6 +42,16 @@
 
 ## 音频增强方案
 
+### 🐋 Sidon（首选，多语言语音修复）
+
+[Sidon](https://huggingface.co/spaces/sarulab-speech/sidon_demo_beta) 是当前默认首选方案，使用官方 CPU 或 CUDA TorchScript 权重。当前实现会：
+
+- 读取输入文件的真实采样率；
+- 将立体声下混为单声道；
+- 在模型内部重采样到 16 kHz；
+- 以最长约 96 秒的分块进行修复；
+- 输出单声道 48 kHz、24-bit WAV。
+
 ### 🧹 ClearVoice + UniverSR（两阶段）
 
 用于底噪和混响都比较严重的录音：
@@ -53,16 +63,6 @@
 ### 🌋 LavaSR（快速）
 
 [LavaSR](https://github.com/ysharma3501/LavaSR) 在单次推理中完成降噪和带宽扩展。上游项目声明支持 8–48 kHz 输入，输出为 48 kHz，适合需要较快处理速度的语音录音。
-
-### 🐋 Sidon（多语言语音修复）
-
-[Sidon](https://huggingface.co/spaces/sarulab-speech/sidon_demo_beta) 使用官方 CPU 或 CUDA TorchScript 权重。当前实现会：
-
-- 读取输入文件的真实采样率；
-- 将立体声下混为单声道；
-- 在模型内部重采样到 16 kHz；
-- 以最长约 96 秒的分块进行修复；
-- 输出单声道 48 kHz、24-bit WAV。
 
 ## 采样率和格式
 
@@ -120,7 +120,7 @@ python app.py
 
 1. 打开“音频增强”。
 2. 上传或录制待增强语音。
-3. 选择增强方案。
+3. 选择增强方案；默认首选为 Sidon。
 4. 点击“开始增强”。
 5. 试听并保存 48 kHz 结果。
 
@@ -142,7 +142,7 @@ python app.py
 
 ### 2. 当前依赖锁定面向 CUDA 12.8
 
-核心 PyPI 依赖和两个 Git 模型仓库已经锁定到审查时的版本/提交。界面使用 Gradio 6.20.0，并将 Pydantic 固定为 2.10.6，避免旧版 Gradio 在生成 API Schema 时出现布尔类型解析错误。CPU、macOS 或其他 CUDA 版本仍需要单独建立并验证安装矩阵，更新锁定版本时应重新执行真实音频回归。
+核心 PyPI 依赖和两个 Git 模型仓库已经锁定到审查时的版本/提交。界面使用 Gradio 6.15.2，并将 Pydantic 固定为 2.10.6，避免旧版 Gradio 在生成 API Schema 时出现布尔类型解析错误，同时保持与 Transformers 4.53.3、Hugging Face Hub 0.34.0 兼容。CPU、macOS 或其他 CUDA 版本仍需要单独建立并验证安装矩阵，更新锁定版本时应重新执行真实音频回归。
 
 ### 3. 当前没有自动质量评估
 

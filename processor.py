@@ -223,9 +223,9 @@ def match_sound_field(
 
 
 PIPELINES = {
+    "🐋 Sidon（多语言语音修复 · 首选）": enhance_sidon,
     "🧹 ClearVoice + UniverSR（强力增强 · 按需超分）": enhance_clearvoice_universr,
     "🌋 LavaSR（极速 · 单阶段）": enhance_lavasr,
-    "🐋 Sidon（多语言语音修复）": enhance_sidon,
 }
 
 
