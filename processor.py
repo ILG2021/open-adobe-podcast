@@ -38,6 +38,21 @@ def _write_48k_pcm24(input_path: str, output_path: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Shared VRAM cleanup helper
+# ---------------------------------------------------------------------------
+
+
+def _release_cuda_memory() -> None:
+    """Force Python GC and empty the CUDA allocator cache."""
+    import gc
+
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+
+
+# ---------------------------------------------------------------------------
 # Speech enhancement: ClearVoice + UniverSR
 # ---------------------------------------------------------------------------
 
@@ -92,6 +107,13 @@ def enhance_clearvoice_universr(
             f"{sorted(UNIVERSR_INPUT_SAMPLE_RATES)} Hz."
         )
         _write_48k_pcm24(denoised_path, final_path)
+
+    # Unload models and free VRAM after inference
+    global _clearvoice_model, _universr_model
+    _clearvoice_model = None
+    _universr_model = None
+    _release_cuda_memory()
+    print("[ClearVoice+UniverSR] Models unloaded, VRAM released.")
     return final_path
 
 
@@ -123,6 +145,12 @@ def enhance_lavasr(input_path: str, output_dir: str = OUTPUT_DIR) -> str:
     output_tensor = model.enhance(input_tensor, denoise=True, batch=False)
     output = output_tensor.squeeze().detach().cpu().numpy()
     sf.write(final_path, output, 48_000, subtype="PCM_24")
+
+    # Unload model and free VRAM after inference
+    global _lavasr_model
+    _lavasr_model = None
+    _release_cuda_memory()
+    print("[LavaSR] Model unloaded, VRAM released.")
     return final_path
 
 
@@ -199,6 +227,13 @@ def enhance_sidon(input_path: str, output_dir: str = OUTPUT_DIR) -> str:
     restored = torch.cat(restored_chunks).detach().cpu().numpy()[:target_samples]
     final_path = _output_path(input_path, "enhanced_sidon", output_dir)
     sf.write(final_path, restored, 48_000, subtype="PCM_24")
+
+    # Unload models and free VRAM after inference
+    global _sidon_models, _sidon_preprocessor
+    _sidon_models.clear()
+    _sidon_preprocessor = None
+    _release_cuda_memory()
+    print("[Sidon] Models unloaded, VRAM released.")
     return final_path
 
 
